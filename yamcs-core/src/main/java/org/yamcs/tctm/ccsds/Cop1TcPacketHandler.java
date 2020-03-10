@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterValue;
@@ -34,11 +33,9 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.util.AggregateMemberNames;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
-
 /**
  * Assembles TC packets into TC frames as per CCSDS 232.0-B-3 and sends them out via FOP1
- * 
+ *
  * <p>
  * Implements the FOP (transmitter) part of the Communications Operations Procedure-1
  * CCSDS 232.1-B-2 September 2010
@@ -46,7 +43,7 @@ import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
  * The FOP1 implementation is a little different than the standard: the "Initiate AD service with CLCW check" will wait
  * for the first CLCW and immediately set the vS to the nR in the CLCW. The standard specifies that the vS has somehow
  * to be set manually to an CLCW observed value before calling the "Initiate AD with CLCW check" directive.
- * 
+ *
  * @author nm
  *
  */
@@ -165,7 +162,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             "state", "waitQueueNumTC", "sentQueueNumFrames", "vS", "nnR" });
 
     public Cop1TcPacketHandler(String yamcsInstance, String linkName,
-            TcVcManagedParameters vmp, ScheduledThreadPoolExecutor executor) {
+                               TcVcManagedParameters vmp, ScheduledThreadPoolExecutor executor) {
         super(yamcsInstance, linkName, vmp.config);
 
         this.frameFactory = vmp.getFrameFactory();
@@ -187,7 +184,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     @Override
-    public void uplinkTc(PreparedCommand pc) {
+    public void sendTc(PreparedCommand pc) {
         log.trace("state: {} new TC {}", externalState, pc);
         if (!cop1Active) {
             if (bypassAll) {
@@ -255,7 +252,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
      * Makes a frame from the packets in the {@link #waitQueue} or returns null if the queue is empty
      * <p>
      * All encountered byPass packets are put directly into the out queue
-     * 
+     *
      * @return
      */
     private TcTransferFrame getNextQueuedDFrame() {
@@ -334,10 +331,10 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     /**
      * Initiate AD with or without CLCW check
-     * 
+     *
      * The returned future will be completed when the operation has been initiated.
-     * 
-     * 
+     *
+     *
      * @param clcwCheck
      *            - if true, a CLCW will be expected from the remote system and used to initialise the vS.
      *            - If false, the current value of vS will be used.
@@ -375,7 +372,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
      * Initiate AD with set V(R). This will cause a BC frame to be sent to the remote system.
      * <p>
      * The returned future is completed as soon as a BC frame has been sent downstream (could be unsuccessful!).
-     * 
+     *
      * @param vR
      */
     public CompletableFuture<Void> initiateADWithVR(int vR) {
@@ -459,7 +456,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     /**
      * Terminate the AD service
-     * 
+     *
      * @return
      */
     public CompletableFuture<Void> terminateAD() {// E29
@@ -483,7 +480,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
      * <li><i>1:</i> when the timer expires and the transmission limit has been reached, then suspend the operation
      * remembering the state. The operations can be resumed by invoking the resume method.</li>
      * </ul>
-     * 
+     *
      * @param tt
      * @return
      */
@@ -499,7 +496,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     /**
      * Set the FOP sliding window with - that is the maximum number of commands that can be unacknoledged at one
      * time.
-     * 
+     *
      * @param K
      * @return
      */
@@ -523,7 +520,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     /**
      * Resume the AD service (if it is suspended)
-     * 
+     *
      * @return
      */
     public CompletableFuture<Void> resume() {
@@ -567,7 +564,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     /**
      * Set the value of the t1Initial - this is the value used to initialize the timer.
-     * 
+     *
      * @param t1Initial
      */
     void setT1Initial(long t1Initial) {
@@ -620,7 +617,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     /**
      * Called when a new CLCW is received from the remote system
-     * 
+     *
      * @param clcw
      */
     public void onCLCW(int clcw) {
@@ -766,7 +763,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                     } else { // clcwRetransmit = 1, txLimit > 1, nr = nnR
                         if (txCount < txLimit) {
                             if (clcwWait == 0) {// clcwRetransmit = 1, txLimit > 1, nr = nnR, clcwWait = 0 // E10.
-                                                // Rev B
+                                // Rev B
                                 traceEvent("E10. Rev B");
                                 if (state == 1 || state == 3) {
                                     initiateADRetransmission();
@@ -781,13 +778,13 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                             }
                         } else {
                             if (clcwWait == 0) {// clcwRetransmit = 1, txLimit>1, nr = nnR
-                                                // txCount = txLimit, clcWait = 0
+                                // txCount = txLimit, clcWait = 0
                                 traceEvent("E12 Rev B");
                                 if (state == 1 || state == 3) {
                                     changeState(2);
                                 }
                             } else { // clcwRetransmit = 1, txLimit>1, nr = nnR, txCount = txLimit, clcWait = 1 //
-                                     // E103
+                                // E103
                                 traceEvent("E103");
                                 if (state < 3) {
                                     changeState(3);
@@ -1057,12 +1054,12 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
      * <li>a BD command has been released
      * <li>
      * </ul>
-     * 
+     *
      * Note that if two commands are placed, two permits will be released but the commands might be put in the same
      * frame. This means that the number of permits released is not exactly the same with the number of frames ready to
      * be sent. However the semaphore is used by the master channel to avoid pooling each VC in turn even though no data
      * is available.
-     * 
+     *
      * @param dataAvailableSemaphore
      */
     public void setDataAvailableSemaphore(Semaphore dataAvailableSemaphore) {

@@ -16,7 +16,7 @@ import org.yamcs.utils.TimeEncoding;
  * Assembles command packets into TC frames as per CCSDS 232.0-B-3.
  * <p>
  * All frames have the bypass flag set (i.e. they are BD frames).
- * 
+ *
  */
 public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandler {
     protected BlockingQueue<PreparedCommand> commandQueue;
@@ -37,7 +37,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     }
 
     @Override
-    public void uplinkTc(PreparedCommand preparedCommand) {
+    public void sendTc(PreparedCommand preparedCommand) {
         if (blockSenderOnQueueFull) {
             try {
                 commandQueue.put(preparedCommand);
@@ -55,7 +55,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         }
     }
 
-  
+
 
     @Override
     public TcTransferFrame getFrame() {

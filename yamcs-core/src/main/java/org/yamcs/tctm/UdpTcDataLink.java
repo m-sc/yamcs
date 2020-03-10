@@ -13,7 +13,7 @@ import org.yamcs.commanding.PreparedCommand;
 
 /**
  * Sends raw packets on UDP socket.
- * 
+ *
  * @author nm
  *
  */

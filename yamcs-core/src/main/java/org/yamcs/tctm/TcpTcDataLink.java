@@ -1,6 +1,5 @@
 package org.yamcs.tctm;
 
-
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -19,7 +18,7 @@ import org.yamcs.commanding.PreparedCommand;
 
 /**
  * Sends raw command packets on TCP socket.
- * 
+ *
  * @author nm
  *
  */
@@ -70,7 +69,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
 
     /**
      * attempts to open the socket if not already open and returns true if its open at the end of the call
-     * 
+     *
      * @return
      */
     protected synchronized boolean openSocket() {
@@ -117,7 +116,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
 
     /**
      * we check if the socket is open by trying a select on the read part of it
-     * 
+     *
      * @return
      */
     private synchronized boolean isSocketOpen() {
@@ -165,13 +164,13 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
         }
     }
 
-
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
         if (!isDisabled()) {
             openSocket();
         }
     }
+
 
     @Override
     public void shutDown() throws Exception {
@@ -236,12 +235,6 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
         openSocket();
     }
 
-    @Override
-    protected void doDisable() throws Exception {
-        if (isRunning()) {
-            disconnect();
-        }
-    }
 
     @Override
     protected Status connectionStatus() {

@@ -23,8 +23,8 @@ import org.yamcs.utils.YObjectLoader;
 /**
  * Base implementation for a TC data link that initialises a post processor and provides a queueing and rate limiting
  * function.
- * 
- * 
+ *
+ *
  * @author nm
  *
  */
@@ -45,16 +45,13 @@ public abstract class AbstractTcDataLink extends AbstractLink
 
     protected long housekeepingInterval = 10000;
     private AggregatedDataLink parent = null;
-    
-   
-    protected boolean failCommandOnDisabled;
-    
+
+
     public AbstractTcDataLink(String yamcsInstance, String linkName, YConfiguration config)
             throws ConfigurationException {
         super(yamcsInstance, linkName, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        
-        failCommandOnDisabled = config.getBoolean("failCommandOnDisabled", false);
+
         initPostprocessor(yamcsInstance, config);
     }
 
@@ -93,20 +90,6 @@ public abstract class AbstractTcDataLink extends AbstractLink
             throw new ConfigurationException(e);
         }
     }
-    
-    @Override
-    public void sendTc(PreparedCommand preparedCommand) {
-        if (isDisabled()) {
-            log.debug("TC disabled, ignoring command {}", preparedCommand.getCommandId());
-            if (failCommandOnDisabled) {
-                failedCommand(preparedCommand.getCommandId(), "Link "+linkName+" disabled");
-            }
-            return;
-        }
-        uplinkTc(preparedCommand);
-    }
-
-    protected abstract void uplinkTc(PreparedCommand preparedCommand);
 
     @Override
     public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
@@ -172,7 +155,7 @@ public abstract class AbstractTcDataLink extends AbstractLink
     public void setParent(AggregatedDataLink parent) {
         this.parent = parent;
     }
-    
+
     /**Send to command history the failed command */
     protected void failedCommand(CommandId commandId, String reason) {
         log.debug("Failing command {}: {}", commandId, reason);
@@ -181,7 +164,7 @@ public abstract class AbstractTcDataLink extends AbstractLink
                 currentTime, AckStatus.NOK, reason);
         commandHistoryPublisher.commandFailed(commandId,  currentTime, reason);
     }
-    
+
     /**
      * send an ack in the command history that the command has been sent out of the link
      * @param commandId
